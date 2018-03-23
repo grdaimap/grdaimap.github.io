@@ -1,2 +1,0 @@
-# grdaimap.github.io
-blog
