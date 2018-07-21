@@ -5,14 +5,14 @@
     <meta charset="utf-8">
     <title>圆和圆小游戏1.0</title>
 </head>
-<p style="color:white;font: 700">刷新开始游戏，与敌人相碰会被红色敌人吸收，绿色时单击鼠标左键可吸收周围的敌人</p>
+<p style="color:white;font: 700">刷新开始游戏，蓝圆玩家与敌人相碰会被红色敌人吸收，鼠标移动控制蓝圆移动，绿色时单击鼠标左键可吸收周围的敌人</p>
 
 <body onload="load()" bgcolor="black">
     <canvas id="world" width="1000" height="1000">???????</canvas>
     <script>
         //index.js        
         var speed = 1;//速度……已经很快了啊喂
-        var numEnemy = 50;//敌人数量
+        var numEnemy = 80;//敌人数量
 
         //以下是乱七八糟的代码
         const map = document.getElementById('world');
