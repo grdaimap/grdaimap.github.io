@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>圆和圆1.0bug修复 - 副本</title>
+</head>
+<p style="color:white;">刷新开始游戏，蓝圆玩家与敌人相碰会被红色敌人吸收，鼠标移动控制蓝圆移动，绿色时单击鼠标左键可吸收周围的敌人</p>
+
+<body onload="load()" bgcolor="black">
+    <canvas id="world" width="1000" height="1000">???????</canvas>
+    <br>
+    <br>
+    <p style="color:white;font-size: 20px">更多**游戏请访问主页</p>
+    <a style="font-size: 20px;" href="https://grdaimap.github.io/">破站 7K99 !!!∑(ﾟДﾟノ)ノ</a>
+</body>
+<script>
+    //index.js        
+    var speed = 1;//速度……已经很快了啊喂
+    var numEnemy = 80;//敌人数量
+
+    //以下是乱七八糟的代码
+    const map = document.getElementById('world');
+    var ctx = map.getContext('2d');
+    var enemys = [];
+    var player = [0, 0];
+    var skills = [];
+    var mapwidth = map.width - 6;
+    var mapheight = map.height - 6;
+    var life = 40;
+    var cout = 0;
+    var ex = 0;
+    var colorme = "#00FFFF";
+    var rid;
+    var plode = [];
+
+
+    class Point {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+
+    function load() {
+        let x = Math.random() * mapwidth;
+        let y = Math.random() * mapheight;
+        player = [x, y];
+        ctx.fillStyle = "#00FFFF";
+        ctx.beginPath();
+        ctx.arc(x, y, life, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        ctx.fillStyle = "red";
+        for (let i = 0; i < numEnemy; i++) {
+            let x = Math.random() * mapwidth;
+            let y = Math.random() * mapheight;
+            enemys.push([x, y]);
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+
+
+    (function drawFrame() {
+        rid = window.requestAnimationFrame(drawFrame);
+        ctx.clearRect(0, 0, map.width, map.height);
+        window.addEventListener('mousemove', (e) => {
+            player[0] = e.clientX < mapwidth ? e.clientX : mapwidth;
+            player[1] = e.clientY < mapheight ? e.clientY : mapheight;
+        });
+        window.addEventListener("click", function () {
+            if (cout > 200) ex = 5 * life;
+            else return;
+            for (let i = 0; i < numEnemy; i++) {
+                if (-ex < player[1] - enemys[i][1] && player[1] - enemys[i][1] < ex && -ex < player[0] - enemys[i][0] && player[0] - enemys[i][0] < ex) {
+                    plode.push([enemys[i][0], enemys[i][1], 7])
+                    enemys[i][0] = enemys[numEnemy - 1][0];
+                    enemys[i][1] = enemys[numEnemy - 1][1];
+                    i--; numEnemy--; life++;
+                }
+            }
+            if (numEnemy < 1) {
+                numEnemy = 0;
+            }
+            cout = 0;
+
+        });
+
+        ctx.fillStyle = colorme;
+        ctx.beginPath();
+        ctx.arc(player[0], player[1], life, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        ctx.fillStyle = "red";
+        for (let i = 0; i < numEnemy; i++) {
+            let rx = ((player[0] - enemys[i][0]) % 2) * 0.6 * speed;
+            let ry = ((player[1] - enemys[i][1]) % 2) * 0.6 * speed;
+            if (enemys[i][0] + rx > mapwidth) enemys[i][0] = enemys[i][0] + rx - mapwidth;
+            else enemys[i][0] += rx;
+            if (enemys[i][0] + rx < 0) enemys[i][0] = enemys[i][0] + rx + mapwidth;
+            else enemys[i][0] += rx;
+            if (enemys[i][1] + ry > mapwidth) enemys[i][1] = enemys[i][1] + ry - mapwidth;
+            else enemys[i][1] += ry;
+            if (enemys[i][1] + ry < 0) enemys[i][1] = enemys[i][1] + ry + mapwidth;
+            else enemys[i][1] += ry;
+            ctx.beginPath();
+            ctx.arc(enemys[i][0], enemys[i][1], 5, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        }
+        cout++;
+        if (cout > 200) colorme = "#00FF00";
+        else colorme = "#00FFFF";
+        update();
+        if (life < 1 || numEnemy < 1) {
+            ctx.font = "20px Georgia";
+            ctx.fillStyle = "yellow";
+            if (life > 0)
+                ctx.fillText("成功！游戏结束!", 10, 50);
+            if (numEnemy > 0)
+                ctx.fillText("失败！游戏结束!", 10, 50);
+            window.cancelAnimationFrame(rid);
+            return;
+        }
+    })();
+
+    function update() {
+        for (let i = 0; i < numEnemy; i++) {
+            let r2 = Math.pow(player[1] - enemys[i][1], 2) + Math.pow(player[0] - enemys[i][0], 2);
+            let lif2 = life * life;
+            if (lif2 > r2) life--;
+            if (life < 0) life = 0;
+        }
+    }</script>
