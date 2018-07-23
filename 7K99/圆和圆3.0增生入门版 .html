@@ -3,9 +3,9 @@
 
 <head>
     <meta charset="utf-8">
-    <title>圆和圆1.1聚星版</title>
+    <title>圆和圆3.0增生入门版 </title>
 </head>
-<p style="color:white;font-size: 20px">刷新开始游戏，蓝圆玩家与敌人相碰会被红色敌人吸收，鼠标移动控制蓝圆移动，绿色时单击鼠标左键可吸收周围的敌人</p>
+<p style="color:white;font-size: 20px">刷新开始游戏。蓝圆玩家与敌人相碰，红色敌人爆炸，玩家也-1，橙色BOSS+1，鼠标移动控制蓝圆移动，绿色时单击鼠标左键可吸收周围的敌人，黄色可使大伤BOSS,，BOSS存活时可以无限增生红色敌人，BOSS可以接触吸收玩家。</p>
 <style>
     body {
         margin: 50px
@@ -21,31 +21,27 @@
 </body>
 <script>
     //index.js        
-    var speed = 5;//速度……已经很快了啊喂
-    var numEnemy = 120;//敌人数量
-
+    var speed = 10;//速度……已经很快了啊喂
+    var numEnemy = 50;//敌人数量
+    var stbEnemy = 30;
     //以下是乱七八糟的代码
     const map = document.getElementById('world');
     var ctx = map.getContext('2d');
     var enemys = [];
     var player = [0, 0];
-    var skills = [];
+    var skills = [0, 0];
     var mapwidth = map.width - 6;
     var mapheight = map.height - 6;
-    var life = 40;
+    var life = 50;
     var cout = 0;
     var ex = 0;
     var colorme = "#00FFFF";
     var rid;
     var plode = [];
+    var boss = [0, 0, 0];
+    var rrx = 0;
+    var rry = 0;
 
-
-    class Point {
-        constructor(x, y) {
-            this.x = x;
-            this.y = y;
-        }
-    }
 
 
     function load() {
@@ -55,6 +51,14 @@
         ctx.fillStyle = "#00FFFF";
         ctx.beginPath();
         ctx.arc(x, y, life, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
+        ctx.fillStyle = "#FF6600";
+        x = 10 + Math.random() * (mapwidth - 10);
+        y = 10 + Math.random() * (mapheight - 10);
+        boss = [x, y, 10];
+        ctx.beginPath();
+        ctx.arc(x, y, 10, 0, 2 * Math.PI);
         ctx.fill();
         ctx.closePath();
         ctx.fillStyle = "red";
@@ -78,20 +82,34 @@
             player[1] = e.clientY < mapheight ? e.clientY : mapheight;
         });
         window.addEventListener("click", function () {
-            if (cout > 200) ex = 5 * life;
-            else return;
-            for (let i = 0; i < numEnemy; i++) {
-                if (-ex < player[1] - enemys[i][1] && player[1] - enemys[i][1] < ex && -ex < player[0] - enemys[i][0] && player[0] - enemys[i][0] < ex) {
-                    plode.push([enemys[i][0], enemys[i][1], 7])
-                    enemys[i][0] = enemys[numEnemy - 1][0];
-                    enemys[i][1] = enemys[numEnemy - 1][1];
-                    i--; numEnemy--; life++;
-                }
+            if (boss[2] > 0 && cout > 800) {
+                plode.push([boss[0], boss[1], 10]);
+                plode.push([boss[0], boss[1], 10]);
+                plode.push([boss[0], boss[1], 10]);
+                plode.push([boss[0], boss[1], 10]);
+                boss[2] -= life;
+                cout = 0;
             }
+            else if (cout > 400) {
+                ex = 5 * life;
+                for (let i = 0; i < numEnemy; i++) {
+                    let rx = player[0] - enemys[i][0];
+                    let ry = player[1] - enemys[i][1];
+                    let r = Math.sqrt(ry * ry + rx * rx);
+                    if (r < ex) {
+                        plode.push([enemys[i][0], enemys[i][1], 7]);
+                        enemys[i][0] = enemys[numEnemy - 1][0];
+                        enemys[i][1] = enemys[numEnemy - 1][1];
+                        i--; numEnemy--; life++;
+                    }
+                }
+                cout = 0;
+            }
+            else return;
             if (numEnemy < 1) {
                 numEnemy = 0;
             }
-            cout = 0;
+
 
         });
 
@@ -100,6 +118,17 @@
         ctx.arc(player[0], player[1], life, 0, 2 * Math.PI);
         ctx.fill();
         ctx.closePath();
+        if (boss[2] > 0) {
+
+            ctx.fillStyle = "#FF6600";
+            ctx.beginPath();
+            ctx.arc(boss[0], boss[1], boss[2], 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
+        }
+        if (boss[2] > 0 && numEnemy < stbEnemy)
+            setTimeout(create(), 30);
+
         ctx.fillStyle = "red";
         for (let i = 0; i < numEnemy; i++) {
             let ry = player[1] - enemys[i][1];
@@ -107,13 +136,25 @@
             let ra = Math.sqrt(ry * ry + rx * rx);
             rx = rx / ra * speed * 0.1;
             ry = ry / ra * speed * 0.1;
+            if (boss[2] > 0 && cout > 800) {
+                rx = 5 * rx;
+                ry = 5 * ry;
+            }
+            else if (boss[2] > 0 && cout > 400) {
+                rx = -3 * rx;
+                ry = -3 * ry;
+            } else if (boss[2] < 0 && cout < 400) {
+                rx = 9 * rx;
+                ry = 9 * ry;
+            } else if (boss[2] < 0 && cout > 400) {
+                rx = -11 * rx;
+                ry = -11 * ry;
+            };
             if (enemys[i][0] + rx > mapwidth) enemys[i][0] = enemys[i][0] + rx - mapwidth;
+            else if (enemys[i][0] + rx < 0) enemys[i][0] = enemys[i][0] + rx + mapwidth;
             else enemys[i][0] += rx;
-            if (enemys[i][0] + rx < 0) enemys[i][0] = enemys[i][0] + rx + mapwidth;
-            else enemys[i][0] += rx;
-            if (enemys[i][1] + ry > mapwidth) enemys[i][1] = enemys[i][1] + ry - mapwidth;
-            else enemys[i][1] += ry;
-            if (enemys[i][1] + ry < 0) enemys[i][1] = enemys[i][1] + ry + mapwidth;
+            if (enemys[i][1] + ry > mapheight) enemys[i][1] = enemys[i][1] + ry - mapheight;
+            else if (enemys[i][1] + ry < 0) enemys[i][1] = enemys[i][1] + ry + mapheight;
             else enemys[i][1] += ry;
             ctx.beginPath();
             ctx.arc(enemys[i][0], enemys[i][1], 5, 0, 2 * Math.PI);
@@ -121,7 +162,8 @@
             ctx.closePath();
         }
         cout++;
-        if (cout > 200) colorme = "#00FF00";
+        if (boss[2] > 0 && cout > 800) colorme = "yellow";
+        else if (cout > 400) colorme = "#00FF00";
         else colorme = "#00FFFF";
         update();
         explode();
@@ -168,7 +210,36 @@
         for (let i = 0; i < numEnemy; i++) {
             let r2 = Math.pow(player[1] - enemys[i][1], 2) + Math.pow(player[0] - enemys[i][0], 2);
             let lif2 = life * life;
-            if (lif2 > r2) life--;
-            if (life < 0) life = 0;
+            if (cout < 400 && lif2 > r2) {
+                life--; if (boss[2] > 0) boss[2]++;
+                plode.push([enemys[i][0], enemys[i][1], 7])
+                enemys[i][0] = enemys[numEnemy - 1][0];
+                enemys[i][1] = enemys[numEnemy - 1][1];
+                i--; numEnemy--; enemys.pop();
+            }
+            if (cout >= 400 && lif2 > r2) {
+                plode.push([enemys[i][0], enemys[i][1], 7])
+                enemys[i][0] = enemys[numEnemy - 1][0];
+                enemys[i][1] = enemys[numEnemy - 1][1];
+                i--; numEnemy--; enemys.pop();
+            }
+
         }
-    }</script>
+
+        if (boss[2] > 0) {
+            let rx = player[0] - boss[0];
+            let ry = player[1] - boss[1];
+            let r = Math.sqrt(ry * ry + rx * rx);
+            if (r < life + boss[2]) { life--; boss[2]++; }
+        }
+        if (life < 0) life = 0;
+    }
+    function create() {
+        let x = Math.random() * mapwidth;
+        let y = Math.random() * mapheight;
+        enemys.push([x, y]);
+        numEnemy++;
+    }
+
+
+</script>
