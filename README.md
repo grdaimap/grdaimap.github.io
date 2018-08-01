@@ -2,7 +2,7 @@
 
 ### 我的小站(￣▽￣)~*
 
-### 以后考虑把其他库搬过来
+### 不怎么更新
 
 ## **[进站biubiubiu](https://grdaimap.github.io/)**
 
